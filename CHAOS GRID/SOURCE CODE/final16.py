@@ -17,7 +17,8 @@ def get_image_path(word):
         "JoshepMJuran": "joseph_juran.png", "KaoruIshikawa": "kaoru_ishikawa.png",
         "KurtLewin": "kurt_lewin.png", "MorrisCooke": "morris_cooke.png",
         "PeterSenge": "peter_senge.png", "ShigeoShingo": "shigeo_shingo.png",
-        "TaiichiOhno": "taiichi_ohno.png", "WalterAShewhart": "walter_shewhart.png"
+        "TaiichiOhno": "taiichi_ohno.png", "WalterAShewhart": "walter_shewhart.png",
+        "default": "default.png"
     }
     return os.path.join(images_path, images.get(word, ""))
 
@@ -86,16 +87,30 @@ def reset_game(button_grid, word_labels, correct_words, original_words):
     correct_words.clear()
     correct_words.extend(original_words)
     name_label.config(text="")
-    image_label.config(image="")
+    show_image("default", name_label, image_label)
 
 # Function to resize the grid when the window size changes
 def resize_grid(event):
     global button_size
+    # Calculate the new button size based on the canvas dimensions
     grid_width = min(event.width, event.height)
     button_size = grid_width // len(crossword)
+    
+    # Update the button sizes and fonts
     for row in button_grid:
         for btn in row:
             btn.config(width=button_size//10, height=button_size//23, font=("Arial", button_size//4))
+    
+    # Center the grid_frame within the canvas
+    canvas.update_idletasks()
+    canvas.config(scrollregion=canvas.bbox("all"))
+    
+    # Calculate the center position
+    canvas_center_x = (canvas.winfo_width() - grid_frame.winfo_width()) // 2
+    canvas_center_y = (canvas.winfo_height() - grid_frame.winfo_height()) // 2
+    
+    # Update the grid_frame position
+    canvas.coords(canvas.create_window((canvas_center_x, canvas_center_y), window=grid_frame, anchor="nw"))
 
 # Define the crossword puzzle and correct words
 crossword = [
@@ -116,15 +131,14 @@ original_words = correct_words.copy()
 
 # Create the main window
 root = tk.Tk()
-root.title("Interactive Criss-Cross Puzzle")
-root.geometry("2560x1600")
+
+root.geometry("1320x750")
 
 # Create frames and labels
 sidebar_frame = tk.Frame(root, bg="#F0F8FF", relief="solid", bd=1)  # Alice blue for sidebar
 sidebar_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ns")
 canvas = Canvas(root, bg="#F0F8FF")  # Alice blue for canvas background
 canvas.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
-canvas.create_image(0, 0, anchor="nw")
 grid_frame = tk.Frame(canvas, bg="#F0F8FF", relief="solid", bd=1)  # Alice blue for grid background
 canvas.create_window((0, 0), window=grid_frame, anchor="nw")
 image_section_frame = tk.Frame(root, bg="#F0F8FF", relief="solid", bd=1)  # Alice blue for image section
@@ -133,6 +147,9 @@ name_label = tk.Label(image_section_frame, text="", font=("Arial", 20, "bold"), 
 name_label.pack(pady=10)
 image_label = tk.Label(image_section_frame, bg="#F0F8FF")
 image_label.pack(expand=True)
+
+# Display the default image at the start
+show_image("default", name_label, image_label)
 
 # Configure grid to resize dynamically
 root.grid_rowconfigure(0, weight=1)
@@ -154,9 +171,17 @@ for i, row in enumerate(crossword):
         button_row.append(btn)
     button_grid.append(button_row)
 
-# Create the list of words as labels in the sidebar
+# Set the window title
+root.title("Chaos Grid")
+
+# Initialize the word_buttons list
 word_buttons = []
-words_frame = tk.Frame(sidebar_frame, bg="#F0F8FF")
+
+# Create a frame to contain the word buttons and the reset button
+container_frame = tk.Frame(sidebar_frame, bg="#F0F8FF")
+container_frame.pack(fill=tk.BOTH, expand=True)
+
+words_frame = tk.Frame(container_frame, bg="#F0F8FF")
 words_frame.pack(fill=tk.BOTH, expand=True)
 
 for word in correct_words:
@@ -165,12 +190,8 @@ for word in correct_words:
     word_buttons.append(btn)
 
 # Add reset button at the bottom
-reset_button = tk.Button(sidebar_frame, text="Reset Game", font="Arial 10 bold", bg="red", fg="white", relief="flat", command=lambda: reset_game(button_grid, word_buttons, correct_words, original_words, start_time, timer_label))
+reset_button = tk.Button(container_frame, text="Reset Game", font="Arial 10 bold", bg="red", fg="white", relief="flat", command=lambda: reset_game(button_grid, word_buttons, correct_words, original_words))
 reset_button.pack(side=tk.BOTTOM, fill=tk.X, pady=10, padx=10)
-
-# Add reset button
-reset_button = tk.Button(sidebar_frame, text="Reset Game", font="Arial 10 bold", bg="red", fg="white", relief="flat", command=lambda: reset_game(button_grid, word_buttons, correct_words, original_words))
-reset_button.pack(fill=tk.X, pady=6.5, padx=10)
 
 # Bind the resize function to the canvas resize event
 canvas.bind("<Configure>", resize_grid)
