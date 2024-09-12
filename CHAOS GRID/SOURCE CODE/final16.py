@@ -48,7 +48,10 @@ wikipedia_urls = {
 # Function to display the image and name
 def show_image(word, name_label, image_label):
     image_path = get_image_path(word)
-    name_label.config(text=word)
+    if word == "default":
+        name_label.config(text="")
+    else:
+        name_label.config(text=word)
     if image_path:
         image = Image.open(image_path).resize((300, 475), Image.LANCZOS)
         photo = ImageTk.PhotoImage(image)
@@ -92,9 +95,22 @@ def handle_button_event(event, selected_buttons, button_grid, correct_words, wor
     elif event.type == tk.EventType.Motion:
         widget = event.widget.winfo_containing(event.x_root, event.y_root)
         if isinstance(widget, tk.Button) and widget not in selected_buttons:
-            select_button(widget, selected_buttons)
+            if is_linear_selection(selected_buttons, widget):
+                select_button(widget, selected_buttons)
     elif event.type == tk.EventType.ButtonRelease:
         check_word(selected_buttons, correct_words, word_labels, name_label, image_label)
+
+# Helper function to check if the selection is linear
+def is_linear_selection(selected_buttons, new_button):
+    if not selected_buttons:
+        return True
+    first_button = selected_buttons[0]
+    row_diff = new_button.grid_info()['row'] - first_button.grid_info()['row']
+    col_diff = new_button.grid_info()['column'] - first_button.grid_info()['column']
+    for btn in selected_buttons:
+        if (new_button.grid_info()['row'] - btn.grid_info()['row']) * col_diff != (new_button.grid_info()['column'] - btn.grid_info()['column']) * row_diff:
+            return False
+    return True
 
 # Function to handle button selection
 def select_button(button, selected_buttons):
@@ -159,24 +175,27 @@ correct_words = [
 ]
 original_words = correct_words.copy()
 
+
 # Create the main window
 root = tk.Tk()
 
 root.geometry("1320x750")
 
 # Create frames and labels
-sidebar_frame = tk.Frame(root, bg="#F0F8FF", relief="solid", bd=1)  # Alice blue for sidebar
-sidebar_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ns")
+sidebar_frame = tk.Frame(root, bg="#F0F8FF", relief="solid", bd=0)  # Alice blue for sidebar
+sidebar_frame.grid(row=0, column=0, padx=5, pady=10, sticky="ns")
 canvas = Canvas(root, bg="#F0F8FF")  # Alice blue for canvas background
-canvas.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
-grid_frame = tk.Frame(canvas, bg="#F0F8FF", relief="solid", bd=1)  # Alice blue for grid background
+canvas.grid(row=0, column=1, padx=5, pady=10, sticky="nsew")
+grid_frame = tk.Frame(canvas, bg="#F0F8FF", relief="solid", bd=0)  # Alice blue for grid background
 canvas.create_window((0, 0), window=grid_frame, anchor="nw")
-image_section_frame = tk.Frame(root, bg="#F0F8FF", relief="solid", bd=1)  # Alice blue for image section
-image_section_frame.grid(row=0, column=2, padx=0, pady=10, sticky="nsew")
-name_label = tk.Label(image_section_frame, text="", font=("Arial", 20, "bold"), bg="#F0F8FF", fg="black")
+image_section_frame = tk.Frame(root, bg="#F0F8FF", relief="solid", bd=0)  # Alice blue for image section
+image_section_frame.grid(row=0, column=2, padx=5, pady=10, sticky="nsew")
+name_label = tk.Label(image_section_frame, text="", font=("Arial", 15, "bold"), bg="#F0F8FF", fg="black")
 name_label.pack(pady=10)
 image_label = tk.Label(image_section_frame, bg="#F0F8FF")
 image_label.pack(expand=True)
+
+
 
 # Display the default image at the start
 show_image("default", name_label, image_label)
