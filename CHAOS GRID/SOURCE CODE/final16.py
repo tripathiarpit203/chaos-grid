@@ -3,6 +3,7 @@ from tkinter import Canvas
 from PIL import Image, ImageTk
 import os
 import sys
+import webbrowser
 
 # Function to get the image path
 def get_image_path(word):
@@ -22,6 +23,28 @@ def get_image_path(word):
     }
     return os.path.join(images_path, images.get(word, ""))
 
+# Dictionary to map scientist names to their Wikipedia URLs
+wikipedia_urls = {
+    "AdamSmith": "https://en.wikipedia.org/wiki/Adam_Smith",
+    "CharlesBabbage": "https://en.wikipedia.org/wiki/Charles_Babbage",
+    "EdwardsDeming": "https://en.wikipedia.org/wiki/W._Edwards_Deming",
+    "EliWhitney": "https://en.wikipedia.org/wiki/Eli_Whitney",
+    "EltonMayo": "https://en.wikipedia.org/wiki/Elton_Mayo",
+    "FrederickWTaylor": "https://en.wikipedia.org/wiki/Frederick_Winslow_Taylor",
+    "HenryFord": "https://en.wikipedia.org/wiki/Henry_Ford",
+    "HenryGantt": "https://en.wikipedia.org/wiki/Henry_Gantt",
+    "JamesPWomack": "https://en.wikipedia.org/wiki/James_P._Womack",
+    "JohnPKotter": "https://en.wikipedia.org/wiki/John_P._Kotter",
+    "JoshepMJuran": "https://en.wikipedia.org/wiki/Joseph_M._Juran",
+    "KaoruIshikawa": "https://en.wikipedia.org/wiki/Kaoru_Ishikawa",
+    "KurtLewin": "https://en.wikipedia.org/wiki/Kurt_Lewin",
+    "MorrisCooke": "https://en.wikipedia.org/wiki/Morris_Llewellyn_Cooke",
+    "PeterSenge": "https://en.wikipedia.org/wiki/Peter_Senge",
+    "ShigeoShingo": "https://en.wikipedia.org/wiki/Shigeo_Shingo",
+    "TaiichiOhno": "https://en.wikipedia.org/wiki/Taiichi_Ohno",
+    "WalterAShewhart": "https://en.wikipedia.org/wiki/Walter_A._Shewhart"
+}
+
 # Function to display the image and name
 def show_image(word, name_label, image_label):
     image_path = get_image_path(word)
@@ -31,6 +54,7 @@ def show_image(word, name_label, image_label):
         photo = ImageTk.PhotoImage(image)
         image_label.config(image=photo)
         image_label.image = photo
+        image_label.name = word  # Store the name in the label for later use
 
 # Function to update the word list and display the image
 def update_word_list(found_word, word_labels, name_label, image_label):
@@ -112,6 +136,12 @@ def resize_grid(event):
     # Update the grid_frame position
     canvas.coords(canvas.create_window((canvas_center_x, canvas_center_y), window=grid_frame, anchor="nw"))
 
+# Function to open the Wikipedia page
+def open_wikipedia(event):
+    name = event.widget.name
+    if name in wikipedia_urls:
+        webbrowser.open(wikipedia_urls[name])
+
 # Define the crossword puzzle and correct words
 crossword = [
     list("EYPWEYKGXVTEJJOTOICQ"), list("LIKQKZWMGTLOFHSLFHIK"), list("ICHCMWTRNTHYLLPZACWS"),
@@ -150,6 +180,9 @@ image_label.pack(expand=True)
 
 # Display the default image at the start
 show_image("default", name_label, image_label)
+
+# Bind the click event to the image_label
+image_label.bind("<Button-1>", open_wikipedia)
 
 # Configure grid to resize dynamically
 root.grid_rowconfigure(0, weight=1)
