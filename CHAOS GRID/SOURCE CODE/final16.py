@@ -51,7 +51,11 @@ def show_image(word, name_label, image_label):
     if word == "default":
         name_label.config(text="")
     else:
-        name_label.config(text=word)
+       name_label.config(
+    text=f"\nclick on image for more info",
+    font=("Arial", 10),  # Smaller font size
+    fg="#888888"  # Lighter color to simulate transparency
+)
     if image_path:
         image = Image.open(image_path).resize((300, 475), Image.LANCZOS)
         photo = ImageTk.PhotoImage(image)
@@ -247,6 +251,10 @@ reset_button.pack(side=tk.BOTTOM, fill=tk.X, pady=10, padx=10)
 
 # Bind the resize function to the canvas resize event
 canvas.bind("<Configure>", resize_grid)
+
+
+
+
 
 # Run the main loop
 root.mainloop()
